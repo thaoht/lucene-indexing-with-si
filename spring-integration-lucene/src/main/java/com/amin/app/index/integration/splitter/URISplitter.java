@@ -24,9 +24,7 @@ public class URISplitter {
 		if (fileToBeIndexed.isDirectory()) {
 			List<File> fileListing = getFileListing(fileToBeIndexed);
 			for (File file : fileListing) {
-				if (!file.getName().startsWith(".DS") && !file.isDirectory()) {
-					listOfUris.add(file.toURI());
-				}
+				listOfUris.add(file.toURI());
 			}
 		} else {
 			listOfUris.add(fileToBeIndexed.toURI());
