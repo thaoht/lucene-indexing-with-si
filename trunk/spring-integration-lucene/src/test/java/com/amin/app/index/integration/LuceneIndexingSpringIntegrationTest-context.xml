@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:os-core="http://www.openspaces.org/schema/core"
+	xmlns:util="http://www.springframework.org/schema/util" 
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+    http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.5.xsd
+    http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
+    http://www.openspaces.org/schema/core http://www.openspaces.org/schema/core/openspaces-core.xsd
+   http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd">
+   
+   <import resource="classpath:/context-index-integration.xml"/>
+   <import resource="classpath:/context-index-writer.xml"/>
+
+   <bean id="directory" class="org.apache.lucene.store.RAMDirectory" />
+ 	
+ 	<bean id="propertyConfigurer"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations" ref="configListLocation" />
+	</bean>
+	
+	<util:list id="configListLocation">
+		<value>classpath:environment.properties</value>
+	</util:list>
+	
+	<bean id="jmsConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory" >
+		<property name="brokerURL">
+			<value>${jms.test.server.url}</value>
+		</property>
+	</bean>
+	
+ </beans>
