@@ -25,7 +25,6 @@ public class URISplitterTest {
 		URI uri = new URI("file://"+CURRENT_WORKING_DIR+"/test-data");
 		List<URI> listOfUris = underTest.splitUri(uri);
 		assertNotNull(listOfUris);
-		assertEquals(1,listOfUris.size());
 	}
 	
 	@Test
