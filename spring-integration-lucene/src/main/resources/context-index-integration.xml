@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/integration"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:beans="http://www.springframework.org/schema/beans"
+    xmlns:stream="http://www.springframework.org/schema/integration/stream"
+   	xmlns:mail="http://www.springframework.org/schema/integration/mail"
+    xmlns:jms="http://www.springframework.org/schema/integration/jms"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+            http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+            http://www.springframework.org/schema/integration
+            http://www.springframework.org/schema/integration/spring-integration-1.0.xsd
+            http://www.springframework.org/schema/integration/stream
+            http://www.springframework.org/schema/integration/stream/spring-integration-stream-1.0.xsd
+            http://www.springframework.org/schema/integration/mail
+            http://www.springframework.org/schema/integration/mail/spring-integration-mail-1.0.xsd
+			http://www.springframework.org/schema/integration/jms
+			http://www.springframework.org/schema/integration/jms/spring-integration-jms-1.0.xsd
+            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd">
+
+	<annotation-config />
+	
+	<!-- Gateway into indexing process using Spring Integration -->
+	<gateway id="indexingGateway" service-interface="com.amin.app.index.integration.gateway.IndexingGateway"/>
+	
+	<!-- If URI is a directory then splits into individual file -->
+	
+	<channel id="filesToBeIndexedInChannel" />
+
+	<jms:outbound-channel-adapter 
+		id="jmsAddUriInAdapter" 
+		destination-name="file.index.queue" 
+		channel="filesToBeIndexedInChannel" 
+		connection-factory="jmsConnectionFactory"/>	
+	
+	<channel id="filesToBeIndexedOutChannel" />
+
+	<jms:inbound-channel-adapter 
+		id="jmsAddUriOutAdapter" 
+		destination-name="file.index.queue" 
+		channel="filesToBeIndexedOutChannel" 
+		connection-factory="jmsConnectionFactory"/>
+	
+	<channel id="splitterOutChannel" />
+	
+	
+	<splitter id="uriSplitter" input-channel="filesToBeIndexedOutChannel" output-channel="splitterOutChannel" method="splitUri" ref="splitter" />
+	
+	<beans:bean id="splitter" class="com.amin.app.index.integration.splitter.URISplitter"/>
+	
+	<!-- Transformer definitions -->
+	<beans:bean id="uriToDocumentTransformer" class="com.amin.app.index.integration.transformer.UriToDocumentTransformer">
+		<beans:constructor-arg ref="tikaContentHandler" />
+	</beans:bean> 
+	<beans:bean id="tikaContentHandler" class="com.amin.app.index.content.extraction.TikaContentHandler" />
+	
+	<transformer id="uriToDocumentTransform" ref="uriToDocumentTransformer" method="transformUriToDocument" input-channel="splitterOutChannel" output-channel="uriToDocumentOutChannel" />
+
+	<beans:bean id="documentToWorkItemTransformer" class="com.amin.app.index.integration.transformer.DocumentToWorkItemTransformer">
+		<beans:constructor-arg ref="directory" />
+	</beans:bean>
+	<transformer id="documentToWorkItemTransform" ref="documentToWorkItemTransformer" method="transformDocumentToWorkItem" input-channel="uriToDocumentOutChannel" output-channel="workItemOutChannel" />
+
+	<channel id="uriToDocumentOutChannel" />
+	<channel id="workItemOutChannel" />
+	
+	<router id="workItemRouter" input-channel="workItemOutChannel" ref="router" method="resolveWorkItemEventChannel" />
+	
+	<beans:bean id="router" class="com.amin.app.index.integration.routing.WorkItemRouter" />
+	
+	<!-- Service activators -->
+	<channel id="add" />
+	<channel id="update" />
+	
+	<jms:outbound-channel-adapter 
+		id="jmsAddIndexAdapter" 
+		destination-name="add.index.queue" 
+		channel="add" 
+		connection-factory="jmsConnectionFactory"/>
+	
+	<jms:outbound-channel-adapter 
+		id="jmsUpdateIndexAdapter" 
+		destination-name="update.index.queue" 
+		channel="update" 
+		connection-factory="jmsConnectionFactory"/>
+	
+	
+	<jms:inbound-channel-adapter 
+		id="jmsAddIndexOutAdapter" 
+		destination-name="add.index.queue" 
+		channel="addIndexOut" 
+		connection-factory="jmsConnectionFactory"/>
+		
+	<jms:inbound-channel-adapter 
+		id="jmsUpdateIndexOutAdapter" 
+		destination-name="update.index.queue" 
+		channel="updateIndexOut" 
+		connection-factory="jmsConnectionFactory"/>
+		
+	
+	<channel id="addIndexOut"/>
+	<channel id="updateIndexOut"/>
+	
+	<service-activator input-channel="addIndexOut" ref="indexingManager" method="add" />
+
+	<service-activator input-channel="updateIndexOut" ref="indexingManager" method="update" />
+	
+	<!-- Polling configuration -->	
+	<poller task-executor="pool" default="true">
+		<interval-trigger time-unit="SECONDS" interval="1" />
+	</poller>
+	
+	<thread-pool-task-executor id="pool" core-size="10"  max-size="25"  queue-capacity="100" />
+	
+	<!-- Error Handling -->
+ 	<channel id="errorChannel" />
+ 	
+ 	<channel id="errorOutChannel" />
+	
+	<beans:bean id="errorTransformer" class="com.amin.app.index.integration.transformer.ErrorTransformer"/>
+	
+	<chain input-channel="errorChannel" output-channel="errorOutChannel">
+		<transformer ref="errorTransformer" method="transformError" />
+	</chain>
+	
+	<!-- Mail sending error -->
+	<mail:outbound-channel-adapter channel="errorOutChannel" mail-sender="mailSender" />
+	
+	<beans:bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+  		<beans:property name="host" value="${mail.smtp.host}" />
+  		<beans:property name="port" value="${mail.smtp.port}" />
+  		<beans:property name="username" value="${mail.username}" />
+  		<beans:property name="password" value="${mail.password}" />
+  		<beans:property name="javaMailProperties" ref="javaMailProperties" />
+	</beans:bean>
+
+	<beans:bean id="javaMailProperties" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+  		<beans:property name="location" value="classpath:javamail.properties"/>
+	</beans:bean>
+	
+</beans:beans>
