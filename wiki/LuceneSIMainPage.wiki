@@ -1,0 +1,14 @@
+#summary Lucene Indexing Using Spring Integration
+
+= Introduction =
+
+This is a reference project demonstrating the use of Lucene (Information Retrieval) and Spring Integration(SI).  The project only looks at the indexing part of Lucene using SI, searching the index is not covered.  A search component can be wired up to look at the directory where the indices are stored.
+
+
+= Details =
+
+
+Add your content here.  Format your content with:
+  * Text in *bold* or _italic_
+  * Headings, paragraphs, and lists
+  * Automatic links to other wiki pages
