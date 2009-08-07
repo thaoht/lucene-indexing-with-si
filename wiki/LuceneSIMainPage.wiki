@@ -7,8 +7,20 @@ This is a reference project demonstrating the use of Lucene (Information Retriev
 
 = Details =
 
+The project is built using maven and developed on Eclipse.  If you wish to import the project into eclipse run "mvn eclipse:eclipse". This will set up the necessary .project files for the IDE.
 
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+To run the main demo of the reference project you will need to do the following:
+
+ * Under src/test/resources Populate the environment.properties to include:
+  # path.index = Your preferred location of index e.g. /User/xyz/tmp/lucene
+  # jms.server.url = You will need to have activemq/messaging broker url
+  # mail.smtp.host
+  # mail.smtp.port
+  # mail.username
+  # mail.password
+
+ * Run messaging broker (activemq was used for the project)
+
+ * In the run configuration of LuceneIndexingIntegrationDemo pass in a VM argument.  This argument must be either a file or directory and must be in the format of "file:///Users/xyz/files" or "file:///Users/xyz/files/file1.pdf"
+
+The mail settings are used for handling any errors that occur during the indexing operation. You can configure your gmail account  or use Apache James.
