@@ -1,0 +1,13 @@
+#summary This section shows the flow of the indexing processing
+
+= Introduction =
+
+This part of the WIKI illustrates the indexing flow using SI.
+
+
+= Details =
+
+Add your content here.  Format your content with:
+  * Text in *bold* or _italic_
+  * Headings, paragraphs, and lists
+  * Automatic links to other wiki pages
