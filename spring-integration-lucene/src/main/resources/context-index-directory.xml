@@ -10,7 +10,7 @@
    http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd">
 
 
-	<bean id="directory" class="com.amin.app.index.directory.CustomisedDirectory" factory-method="getDirectory" >
+	<bean id="directory" class="com.amin.luceneindexsi.index.directory.CustomisedDirectory" factory-method="getDirectory" >
 		<description>Customised directory implementations to unlock a directory if it is locked</description>
 		<constructor-arg index="0"><value>${path.index}</value></constructor-arg>
 	</bean>

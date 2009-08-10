@@ -21,7 +21,7 @@
 	<annotation-config />
 	
 	<!-- Gateway into indexing process using Spring Integration -->
-	<gateway id="indexingGateway" service-interface="com.amin.app.index.integration.gateway.IndexingGateway"/>
+	<gateway id="indexingGateway" service-interface="com.amin.luceneindexsi.index.integration.gateway.IndexingGateway"/>
 	
 	<!-- If URI is a directory then splits into individual file -->
 	
@@ -46,17 +46,17 @@
 	
 	<splitter id="uriSplitter" input-channel="filesToBeIndexedOutChannel" output-channel="splitterOutChannel" method="splitUri" ref="splitter" />
 	
-	<beans:bean id="splitter" class="com.amin.app.index.integration.splitter.URISplitter"/>
+	<beans:bean id="splitter" class="com.amin.luceneindexsi.index.integration.splitter.URISplitter"/>
 	
 	<!-- Transformer definitions -->
 	
 	<!-- URI to document transformation definitions -->
-	<beans:bean id="uriToDocumentTransformer" class="com.amin.app.index.integration.transformer.UriToDocumentTransformer">
+	<beans:bean id="uriToDocumentTransformer" class="com.amin.luceneindexsi.index.integration.transformer.UriToDocumentTransformer">
 		<beans:description>Transformer class that converts a URI of a file into a Lucene Document using Apache Tika</beans:description>
 		<beans:constructor-arg ref="tikaContentHandler" />
 	</beans:bean> 
 
-	<beans:bean id="tikaContentHandler" class="com.amin.app.index.content.extraction.TikaContentHandler">
+	<beans:bean id="tikaContentHandler" class="com.amin.luceneindexsi.index.content.extraction.TikaContentHandler">
 		<beans:description>Content extraction handler responsible for extracting content from a given URI</beans:description>
 	</beans:bean>
 		
@@ -64,7 +64,7 @@
 
 	
 	<!-- Document to WorkItem transformation definitions -->
-	<beans:bean id="documentToWorkItemTransformer" class="com.amin.app.index.integration.transformer.DocumentToWorkItemTransformer">
+	<beans:bean id="documentToWorkItemTransformer" class="com.amin.luceneindexsi.index.integration.transformer.DocumentToWorkItemTransformer">
 		<beans:description>Transformer responsible for converting a lucene document into a WorkItem</beans:description>
 		<beans:constructor-arg ref="directory" />
 	</beans:bean>
@@ -78,7 +78,7 @@
 	<!-- Work Item routing definitions -->	
 	<router id="workItemRouter" input-channel="workItemOutChannel" ref="router" method="resolveWorkItemEventChannel" />
 	
-	<beans:bean id="router" class="com.amin.app.index.integration.routing.WorkItemRouter">
+	<beans:bean id="router" class="com.amin.luceneindexsi.index.integration.routing.WorkItemRouter">
 		<beans:description>Router which determines which channel a workitem will go down</beans:description>
 	</beans:bean>
 	
@@ -131,7 +131,7 @@
  	
  	<channel id="errorOutChannel" />
 	
-	<beans:bean id="errorTransformer" class="com.amin.app.index.integration.transformer.ErrorTransformer"/>
+	<beans:bean id="errorTransformer" class="com.amin.luceneindexsi.index.integration.transformer.ErrorTransformer"/>
 	
 	<chain input-channel="errorChannel" output-channel="errorOutChannel">
 		<transformer ref="errorTransformer" method="transformError" />
