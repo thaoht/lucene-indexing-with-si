@@ -7,6 +7,10 @@ This section of the wiki shows some of the classes and how they interact in the 
 = Details =
 
 
-  * *bold* Gateway
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+  * *Gateway*
+  * *Splitter*
+  * *Transformer*
+  * *Router*
+  * *ServiceActivator*
+  * *Error Handling*
+  * *Mail*
