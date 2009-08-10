@@ -16,7 +16,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import com.amin.app.index.integration.gateway.IndexingGateway;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration
+@ContextConfiguration(locations= {"classpath:LuceneIndexingSpringIntegrationTest-context.xml"})
 public class LuceneIndexingSpringIntegrationTest {
 	
 	@Autowired private IndexingGateway indexingGateway;

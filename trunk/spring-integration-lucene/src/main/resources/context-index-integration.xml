@@ -49,24 +49,38 @@
 	<beans:bean id="splitter" class="com.amin.app.index.integration.splitter.URISplitter"/>
 	
 	<!-- Transformer definitions -->
+	
+	<!-- URI to document transformation definitions -->
 	<beans:bean id="uriToDocumentTransformer" class="com.amin.app.index.integration.transformer.UriToDocumentTransformer">
+		<beans:description>Transformer class that converts a URI of a file into a Lucene Document using Apache Tika</beans:description>
 		<beans:constructor-arg ref="tikaContentHandler" />
 	</beans:bean> 
-	<beans:bean id="tikaContentHandler" class="com.amin.app.index.content.extraction.TikaContentHandler" />
-	
+
+	<beans:bean id="tikaContentHandler" class="com.amin.app.index.content.extraction.TikaContentHandler">
+		<beans:description>Content extraction handler responsible for extracting content from a given URI</beans:description>
+	</beans:bean>
+		
 	<transformer id="uriToDocumentTransform" ref="uriToDocumentTransformer" method="transformUriToDocument" input-channel="splitterOutChannel" output-channel="uriToDocumentOutChannel" />
 
+	
+	<!-- Document to WorkItem transformation definitions -->
 	<beans:bean id="documentToWorkItemTransformer" class="com.amin.app.index.integration.transformer.DocumentToWorkItemTransformer">
+		<beans:description>Transformer responsible for converting a lucene document into a WorkItem</beans:description>
 		<beans:constructor-arg ref="directory" />
 	</beans:bean>
+	
 	<transformer id="documentToWorkItemTransform" ref="documentToWorkItemTransformer" method="transformDocumentToWorkItem" input-channel="uriToDocumentOutChannel" output-channel="workItemOutChannel" />
 
 	<channel id="uriToDocumentOutChannel" />
 	<channel id="workItemOutChannel" />
-	
+
+
+	<!-- Work Item routing definitions -->	
 	<router id="workItemRouter" input-channel="workItemOutChannel" ref="router" method="resolveWorkItemEventChannel" />
 	
-	<beans:bean id="router" class="com.amin.app.index.integration.routing.WorkItemRouter" />
+	<beans:bean id="router" class="com.amin.app.index.integration.routing.WorkItemRouter">
+		<beans:description>Router which determines which channel a workitem will go down</beans:description>
+	</beans:bean>
 	
 	<!-- Service activators -->
 	<channel id="add" />

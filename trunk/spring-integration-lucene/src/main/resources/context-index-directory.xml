@@ -11,6 +11,7 @@
 
 
 	<bean id="directory" class="com.amin.app.index.directory.CustomisedDirectory" factory-method="getDirectory" >
+		<description>Customised directory implementations to unlock a directory if it is locked</description>
 		<constructor-arg index="0"><value>${path.index}</value></constructor-arg>
 	</bean>
 	
