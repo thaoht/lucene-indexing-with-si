@@ -13,7 +13,7 @@
 	<bean id="analyzer" class="org.apache.lucene.analysis.standard.StandardAnalyzer" />
 	
 	
-	<bean id="indexWriter" class="com.amin.app.index.CustomisedIndexWriter" destroy-method="close" init-method="initialise">
+	<bean id="indexWriter" class="com.amin.luceneindexsi.index.CustomisedIndexWriter" destroy-method="close" init-method="initialise">
     	<description>Customised index writer to handle the event of a configured directory is locked</description>
     	<constructor-arg index="0" type="org.apache.lucene.store.Directory" ref="directory" />
     	<constructor-arg index="1" type="org.apache.lucene.analysis.Analyzer" ref="analyzer" />
@@ -22,7 +22,7 @@
     	</constructor-arg>
     </bean>
     
-    <bean id="indexingManager" class="com.amin.app.index.manager.IndexingManager" >
+    <bean id="indexingManager" class="com.amin.luceneindexsi.index.manager.IndexingManager" >
     	<description>Indexing process manager</description>
     	<constructor-arg ref="indexWriter" />
     </bean>
