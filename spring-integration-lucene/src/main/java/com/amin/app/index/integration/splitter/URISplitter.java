@@ -9,6 +9,13 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 
+/**
+ * 
+ * @author amin mohammed-coleman
+ * This class is responsible for checking whether the URI provided is a directory or not.
+ * If it is a directory then it recursively gets all the files and creates a list of URIs
+ *
+ */
 public class URISplitter {
 
 	private final Logger  LOGGER = Logger.getLogger(getClass().getName()); 
