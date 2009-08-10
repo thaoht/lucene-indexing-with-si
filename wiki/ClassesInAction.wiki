@@ -11,6 +11,6 @@ This section of the wiki shows some of the classes and how they interact in the 
   * *Splitter*
   * *Transformer*
   * *Router*
-  * *ServiceActivator*
+  * *Service Activator*
   * *Error Handling*
   * *Mail*
