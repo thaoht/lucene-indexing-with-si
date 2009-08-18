@@ -7,6 +7,11 @@ This is a reference project demonstrating the use of Lucene (Information Retriev
 
 = Details =
 
+You will need to checkout the following project and build from source. This will place mock-runner artifact in you maven repository:
+
+http://code.google.com/p/mock-annotation/
+
+
 The project is built using maven and developed on Eclipse.  If you wish to import the project into eclipse run "mvn eclipse:eclipse". This will set up the necessary .project files for the IDE.
 
 To run the main demo of the reference project you will need to do the following:
