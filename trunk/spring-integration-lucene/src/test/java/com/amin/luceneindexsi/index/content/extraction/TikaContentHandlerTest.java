@@ -9,8 +9,6 @@ import org.apache.lucene.document.Document;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.amin.luceneindexsi.index.content.extraction.TikaContentHandler;
-
 public class TikaContentHandlerTest {
 
 	private TikaContentHandler underTest;
@@ -28,5 +26,5 @@ public class TikaContentHandlerTest {
 		assertNotNull(luceneDocument);
 		List<?> fields = luceneDocument.getFields();
 		assertNotNull(fields);
-	}
+    }
 }

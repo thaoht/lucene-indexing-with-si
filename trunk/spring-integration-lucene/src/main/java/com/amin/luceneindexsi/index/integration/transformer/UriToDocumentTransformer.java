@@ -15,10 +15,19 @@ public class UriToDocumentTransformer {
 	public UriToDocumentTransformer(final ContentExtractionHandler contentExtractionHandler) {
 		this.contentExtractionHandler = contentExtractionHandler;
 	}
-	
+
+    /**
+     * Transformer that converts a URI into a Lucene Document.
+     * @see {@link com.amin.luceneindexsi.index.content.extraction.ContentExtractionHandler} and implementing classes for how
+     * content is extracted.
+     * @param uri URI for file to be processed.
+     * @return Document A lucene document
+     */
 	public Document transformUriToDocument(URI uri) {
+
 		LOGGER.debug("inside " + getClass().getName() );
 		LOGGER.debug("transforming uri [" + uri.toString() + "] to indexable document");
+        
 		try {
 			return contentExtractionHandler.getDocument(uri);
 		} catch (Exception e) {

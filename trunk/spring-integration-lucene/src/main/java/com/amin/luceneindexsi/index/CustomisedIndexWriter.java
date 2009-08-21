@@ -3,17 +3,21 @@ package com.amin.luceneindexsi.index;
 import java.io.IOException;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.LockObtainFailedException;
+
 
 public class CustomisedIndexWriter extends IndexWriter {
 	
-	public CustomisedIndexWriter(Directory d, Analyzer a, MaxFieldLength mfl) throws CorruptIndexException, LockObtainFailedException, IOException {
+	public CustomisedIndexWriter(Directory d, Analyzer a, MaxFieldLength mfl) throws IOException {
 		super(d, a, mfl);
 	}
 
+    /**
+     * If directory is locked then an attempt is made to unlock it before
+     * usage.
+     * @throws Exception Exception thrown if directory cannot be locked.
+     */
 	public void initialise() throws Exception {
 		if (IndexWriter.isLocked(getDirectory())) {
 			IndexWriter.unlock(getDirectory());

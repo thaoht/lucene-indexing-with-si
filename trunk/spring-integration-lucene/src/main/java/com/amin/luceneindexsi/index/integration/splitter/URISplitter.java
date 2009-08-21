@@ -18,16 +18,21 @@ import org.apache.log4j.Logger;
  */
 public class URISplitter {
 
-	private final Logger  LOGGER = Logger.getLogger(getClass().getName()); 
-	
+	private final Logger  LOGGER = Logger.getLogger(getClass().getName());
+
+    /**
+     * This the splitter method which is responsible for breaking a URI into
+     * smaller URI if the URI is a directory.
+     * @param uri Source URI
+     * @return A list of individual file uris
+     * @throws Exception
+     */
 	public List<URI> splitUri(URI uri) throws Exception {
 		LOGGER.debug("inside splitter uri " + uri.toString());
 		List<URI> listOfUris = new ArrayList<URI>();
 		File fileToBeIndexed = new File(uri);
-		if (!fileToBeIndexed.exists()) {
-			throw new IllegalArgumentException("uri does not exist");
-		}
-		if (fileToBeIndexed.isDirectory()) {
+        validateUriExists(fileToBeIndexed);
+        if (fileToBeIndexed.isDirectory()) {
 			Collection<?> collectionOfFiles = FileUtils.listFiles(fileToBeIndexed, null, true);
 			for (Object fileObj : collectionOfFiles) {
 				File file = (File)fileObj;
@@ -38,4 +43,10 @@ public class URISplitter {
 		}
 		return listOfUris;
 	}
+
+    private void validateUriExists(File fileToBeIndexed) {
+        if (!fileToBeIndexed.exists()) {
+            throw new IllegalArgumentException("uri does not exist");
+        }
+    }
 }

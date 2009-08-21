@@ -5,9 +5,6 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
-
 import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -22,18 +19,16 @@ import org.xml.sax.ContentHandler;
 
 
 public class TikaContentHandler implements ContentExtractionHandler {
-	
-	private Set<String> textualMetadataFields = new HashSet<String>();
-	
-	public TikaContentHandler() {
-		textualMetadataFields.add(Metadata.TITLE); 
-		textualMetadataFields.add(Metadata.AUTHOR); 
-		textualMetadataFields.add(Metadata.COMMENTS); 
-		textualMetadataFields.add(Metadata.KEYWORDS); 
-		textualMetadataFields.add(Metadata.DESCRIPTION); 
-		textualMetadataFields.add(Metadata.SUBJECT);
-	}
-	
+
+    private static final String BODY_FIELD = "body";
+    private static final String FILE_NAME_FIELD = "filename";
+
+    /**
+     * Converts a URI into a Lucene Document using Apache Tika
+     * @param uri URI of file to be converted
+     * @return A Lucene Document
+     * @throws Exception  If failure of converting occurs
+     */
 	@Override
 	public Document getDocument(URI uri) throws Exception {
 		Assert.notNull(uri, "uri cannot be null");
@@ -42,7 +37,6 @@ public class TikaContentHandler implements ContentExtractionHandler {
 		metadata.set(Metadata.RESOURCE_NAME_KEY,  fileToBeIndexed.getCanonicalPath());
 		metadata.set(Metadata.LAST_MODIFIED, DateTools.dateToString(new Date(fileToBeIndexed.lastModified()), Resolution.DAY));
 	
-		
 		InputStream inputStream = new FileInputStream(fileToBeIndexed);
 		ContentHandler contentHandler = new BodyContentHandler();
 		Parser parser = new AutoDetectParser();
@@ -50,13 +44,13 @@ public class TikaContentHandler implements ContentExtractionHandler {
 		String content = contentHandler.toString();
 
 		Document document = new Document();
-		document.add(new Field("body", content, Store.COMPRESS, Field.Index.ANALYZED));
+		document.add(new Field(BODY_FIELD, content, Store.COMPRESS, Field.Index.ANALYZED));
 		
 		for(String name: metadata.names()) {
 			String value = metadata.get(name);
 			document.add(new Field(name, value,Field.Store.YES, Field.Index.NOT_ANALYZED, Field.TermVector.YES));
 		}
-	
+	    document.add(new Field(FILE_NAME_FIELD, fileToBeIndexed.getCanonicalPath(),Field.Store.YES, Field.Index.NOT_ANALYZED));
 		return document;
 	}
 
