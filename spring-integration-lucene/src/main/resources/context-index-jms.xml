@@ -10,13 +10,15 @@
 
 	<!-- JMS Configuration -->
 	<bean id="jmsConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory" >
-		<property name="brokerURL">
+		<description>JMS Connection Factory configuration</description>
+        <property name="brokerURL">
 			<value>${jms.server.url}</value>
 		</property>
 		<property name="redeliveryPolicy" ref="standardRedeliveryPolicy" />
 	</bean>
 	
 	<bean id="standardRedeliveryPolicy" class="org.apache.activemq.RedeliveryPolicy">
+        <description>Retry delivery definition</description>
 		<property name="maximumRedeliveries" value="3" />
 		<property name="backOffMultiplier" value="100" />
 		<property name="useExponentialBackOff" value="true" />

@@ -23,11 +23,17 @@ public class DocumentToWorkItemTransformer {
 	public DocumentToWorkItemTransformer(final Directory directory) {
 		this.directory = directory;
 	}
-	
-	public WorkItem transformDocumentToWorkItem(Document document) {
-		Assert.notNull(document, "document cannot be null");
+
+    /**
+     * 
+     * @param document
+     * @return
+     */
+
+ 	public WorkItem transformDocumentToWorkItem(Document document) {
+    	Assert.notNull(document, "document cannot be null");
 		LOGGER.debug("inside " + getClass().getName() );
-		
+
 		IndexReader indexReader = null;
 		WorkItemEvent workItemEvent = null;
 		try {
@@ -49,12 +55,13 @@ public class DocumentToWorkItemTransformer {
 			throw new IllegalStateException(e);
 		} finally {
 			try {
-				indexReader.close();
+                if (indexReader != null) {
+				    indexReader.close();
+                }
 			} catch (IOException e) {
 				throw new IllegalStateException(e);
 			}
 		}
-		WorkItem workItem = new WorkItem(workItemEvent, document);
-		return workItem;
+		return new WorkItem(workItemEvent, document);
 	}
 }

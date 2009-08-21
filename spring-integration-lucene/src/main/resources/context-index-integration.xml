@@ -21,10 +21,8 @@
 	<annotation-config />
 	
 	<!-- Gateway into indexing process using Spring Integration -->
-	<gateway id="indexingGateway" service-interface="com.amin.luceneindexsi.index.integration.gateway.IndexingGateway"/>
-	
-	<!-- If URI is a directory then splits into individual file -->
-	
+	<gateway id="indexingGateway" service-interface="com.amin.luceneindexsi.index.integration.gateway.IndexingGateway" />
+   
 	<channel id="filesToBeIndexedInChannel" />
 
 	<jms:outbound-channel-adapter 
@@ -42,13 +40,17 @@
 		connection-factory="jmsConnectionFactory"/>
 	
 	<channel id="splitterOutChannel" />
-	
-	
+
+
+    <!-- If URI is a directory then splits into individual file -->
+
 	<splitter id="uriSplitter" input-channel="filesToBeIndexedOutChannel" output-channel="splitterOutChannel" method="splitUri" ref="splitter" />
 	
-	<beans:bean id="splitter" class="com.amin.luceneindexsi.index.integration.splitter.URISplitter"/>
+	<beans:bean id="splitter" class="com.amin.luceneindexsi.index.integration.splitter.URISplitter">
+           <beans:description>This bean is responsible for checking if uri is directory and if it is then splits then into files</beans:description>
+    </beans:bean>
 	
-	<!-- Transformer definitions -->
+	<!-- ******************* START TRANSFORMER DEFINTIIONS ************************************* -->
 	
 	<!-- URI to document transformation definitions -->
 	<beans:bean id="uriToDocumentTransformer" class="com.amin.luceneindexsi.index.integration.transformer.UriToDocumentTransformer">
@@ -74,6 +76,7 @@
 	<channel id="uriToDocumentOutChannel" />
 	<channel id="workItemOutChannel" />
 
+    <!-- ********************** END OF TRANSFOMRER DEFINTIIONS ****************************-->
 
 	<!-- Work Item routing definitions -->	
 	<router id="workItemRouter" input-channel="workItemOutChannel" ref="router" method="resolveWorkItemEventChannel" />
@@ -131,14 +134,21 @@
  	
  	<channel id="errorOutChannel" />
 	
-	<beans:bean id="errorTransformer" class="com.amin.luceneindexsi.index.integration.transformer.ErrorTransformer"/>
+	<beans:bean id="errorTransformer" class="com.amin.luceneindexsi.index.integration.transformer.ErrorTransformer">
+        <beans:description>Transformer responsible for converting an error payload from SI into a String</beans:description>
+    </beans:bean>
+        
 	
 	<chain input-channel="errorChannel" output-channel="errorOutChannel">
 		<transformer ref="errorTransformer" method="transformError" />
-	</chain>
-	
+        <mail:header-enricher from="${mailFrom}" to="${mailTo}" subject="${mail.subject}" overwrite="false"/>
+     </chain>
+
+
 	<!-- Mail sending error -->
 	<mail:outbound-channel-adapter channel="errorOutChannel" mail-sender="mailSender" />
+
+
 	
 	<beans:bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
   		<beans:property name="host" value="${mail.smtp.host}" />
@@ -151,5 +161,6 @@
 	<beans:bean id="javaMailProperties" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
   		<beans:property name="location" value="classpath:javamail.properties"/>
 	</beans:bean>
+    <!-- End of Error Handling definitions -->
 	
 </beans:beans>

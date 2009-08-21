@@ -28,6 +28,7 @@ public class IndexingManager {
 	
 	public void update(WorkItem workItem) {
 		try {
+            
 			LOGGER.debug("updating workitem to index");
 			Term t = new Term(Metadata.RESOURCE_NAME_KEY, workItem.getPayLoad().get(Metadata.RESOURCE_NAME_KEY));
 			indexWriter.deleteDocuments(t);	

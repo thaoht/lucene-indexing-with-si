@@ -20,7 +20,6 @@ import org.apache.tika.metadata.Metadata;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.amin.luceneindexsi.index.integration.transformer.DocumentToWorkItemTransformer;
 import com.amin.luceneindexsi.index.work.WorkItem;
 import com.amin.luceneindexsi.index.work.WorkItem.WorkItemEvent;
 
@@ -52,7 +51,7 @@ public class DocumentToWorkItemTransformerTest {
 	@Before
 	public void setUpDataInDirectory() {
 		document = new Document();
-		Field f= new Field(Metadata.RESOURCE_NAME_KEY, "/Users/amin/test/pdfFile.pdf", Store.YES, org.apache.lucene.document.Field.Index.NOT_ANALYZED);
+		Field f= new Field(Metadata.RESOURCE_NAME_KEY, "/Users/xyz/test/pdfFile.pdf", Store.YES, org.apache.lucene.document.Field.Index.NOT_ANALYZED);
 		document.add(f);
 	}
 	
@@ -68,7 +67,7 @@ public class DocumentToWorkItemTransformerTest {
 	@Test
 	public void testCanCreateAddWorkItemUsingTransformer() throws Exception{
 		document.removeField(Metadata.RESOURCE_NAME_KEY);
-		Field f= new Field(Metadata.RESOURCE_NAME_KEY, "/Users/amin/test/xyz.pdf", Store.YES, org.apache.lucene.document.Field.Index.NOT_ANALYZED);
+		Field f= new Field(Metadata.RESOURCE_NAME_KEY, "/Users/xyz/test/xyz.pdf", Store.YES, org.apache.lucene.document.Field.Index.NOT_ANALYZED);
 		document.add(f);
 		
 		WorkItem workItem = underTest.transformDocumentToWorkItem(document);
