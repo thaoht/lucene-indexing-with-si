@@ -26,7 +26,7 @@ To run the main demo of the reference project you will need to do the following:
 
  * Run messaging broker (activemq was used for the project)
 
- * In the run configuration of LuceneIndexingIntegrationDemo pass in a VM argument.  This argument must be either a file or directory and must be in the format of "file:///Users/xyz/files" or "file:///Users/xyz/files/file1.pdf"
+ * If you wish to run the LuceneIndexingIntegrationDemo class you will require an environment.properties file to be included in the classpath.  The details of what should be included are similar to the ones described above. In the run configuration of LuceneIndexingIntegrationDemo pass in a VM argument.  This argument must be either a file or directory and must be in the format of "file:///Users/xyz/files" or "file:///Users/xyz/files/file1.pdf"
 
 The mail settings are used for handling any errors that occur during the indexing operation. You can configure your gmail account  or use Apache James.
 
