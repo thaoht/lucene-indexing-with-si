@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 
 /**
@@ -33,16 +32,20 @@ public class URISplitter {
 		File fileToBeIndexed = new File(uri);
         validateUriExists(fileToBeIndexed);
         if (fileToBeIndexed.isDirectory()) {
-			Collection<?> collectionOfFiles = FileUtils.listFiles(fileToBeIndexed, null, true);
-			for (Object fileObj : collectionOfFiles) {
-				File file = (File)fileObj;
-				listOfUris.add(file.toURI());
-			}
+            listOfUris.addAll(toURI(fileToBeIndexed.listFiles()));
 		} else {
 			listOfUris.add(fileToBeIndexed.toURI());
 		}
 		return listOfUris;
 	}
+
+    private Collection<? extends URI> toURI(File[] files) {
+        List<URI> toReturn = new ArrayList<URI>();
+        for (File file : files) {
+            toReturn.add(file.toURI());
+        }
+        return toReturn;
+    }
 
     private void validateUriExists(File fileToBeIndexed) {
         if (!fileToBeIndexed.exists()) {

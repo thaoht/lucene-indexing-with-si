@@ -9,7 +9,7 @@ public class WorkItemRouter {
 	private final Logger  LOGGER = Logger.getLogger(getClass());
 
 
-    /**
+   /**
      * Based on the workItemEvent  the method will extract the channel name.
      * Currently there is only add and update channel.q
      * @see com.amin.luceneindexsi.index.work.WorkItem.WorkItemEvent

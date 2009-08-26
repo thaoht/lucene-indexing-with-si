@@ -1,0 +1,5 @@
+26th August 2006
+#Added DirectoryOrFileRouter Contribution: Dan Oxlade
+#Added DirectoryOrFileRouterTest Contribution: Dan Oxlade
+#Updated UriSpitter to take deal with just files
+#Added StopWatch measurements to DocuemntToWorkItemTransformer and TikaContentHandler
