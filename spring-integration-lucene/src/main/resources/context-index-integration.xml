@@ -47,7 +47,7 @@
     <beans:bean id="directoryOrFileRouter"
                 class="com.amin.luceneindexsi.index.integration.routing.DirectoryOrFileRouter"
                 p:directoryRoute="isDirectoryChannel"
-                p:fileRoute="isFileChannel" />
+                p:fileRoute="isFileChannelIn" />
 
     <channel id="isDirectoryChannel" />
     <channel id="isFileChannelIn" />
@@ -66,7 +66,9 @@
     <channel id="isFileChannelOut" />
 
     <!-- If URI is a directory then splits into all URIs in the directory -->
-    <splitter id="uriSplitter" input-channel="isDirectoryChannel" output-channel="filesToBeIndexedOutChannel" method="splitUri" ref="splitter" />
+    <splitter id="uriSplitter"
+              input-channel="isDirectoryChannel" output-channel="filesToBeIndexedOutChannel"
+              method="splitUri" ref="splitter" />
 
     <channel id="splitterOutChannel" />
 	
@@ -86,7 +88,9 @@
 		<beans:description>Content extraction handler responsible for extracting content from a given URI</beans:description>
 	</beans:bean>
 		
-	<transformer id="uriToDocumentTransform" ref="uriToDocumentTransformer" method="transformUriToDocument" input-channel="isFileChannel" output-channel="uriToDocumentOutChannel" />
+	<transformer id="uriToDocumentTransform"
+                 ref="uriToDocumentTransformer" method="transformUriToDocument"
+                 input-channel="isFileChannelOut" output-channel="uriToDocumentOutChannel" />
 
 	
 	<!-- Document to WorkItem transformation definitions -->
@@ -95,7 +99,9 @@
 		<beans:constructor-arg ref="directory" />
 	</beans:bean>
 	
-	<transformer id="documentToWorkItemTransform" ref="documentToWorkItemTransformer" method="transformDocumentToWorkItem" input-channel="uriToDocumentOutChannel" output-channel="workItemOutChannel" />
+	<transformer id="documentToWorkItemTransform"
+                 ref="documentToWorkItemTransformer" method="transformDocumentToWorkItem"
+                 input-channel="uriToDocumentOutChannel" output-channel="workItemOutChannel" />
 
 	<channel id="uriToDocumentOutChannel" />
 	<channel id="workItemOutChannel" />
