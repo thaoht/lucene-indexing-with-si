@@ -6,6 +6,7 @@
    	xmlns:mail="http://www.springframework.org/schema/integration/mail"
     xmlns:jms="http://www.springframework.org/schema/integration/jms"
     xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:p="http://www.springframework.org/schema/p"
     xsi:schemaLocation="http://www.springframework.org/schema/beans
             http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
             http://www.springframework.org/schema/integration
@@ -38,13 +39,36 @@
 		destination-name="file.index.queue" 
 		channel="filesToBeIndexedOutChannel" 
 		connection-factory="jmsConnectionFactory"/>
-	
-	<channel id="splitterOutChannel" />
 
+    <router input-channel="filesToBeIndexedOutChannel"
+            ref="directoryOrFileRouter"
+            method="isDirectory"/>
 
-    <!-- If URI is a directory then splits into individual file -->
+    <beans:bean id="directoryOrFileRouter"
+                class="com.amin.luceneindexsi.index.integration.routing.DirectoryOrFileRouter"
+                p:directoryRoute="isDirectoryChannel"
+                p:fileRoute="isFileChannel" />
 
-	<splitter id="uriSplitter" input-channel="filesToBeIndexedOutChannel" output-channel="splitterOutChannel" method="splitUri" ref="splitter" />
+    <channel id="isDirectoryChannel" />
+    <channel id="isFileChannelIn" />
+
+    
+	<jms:outbound-channel-adapter
+		id="jmsSingleFileToBeIndexedInAdapter"
+		destination-name="single.file.index.queue"
+		channel="isFileChannelIn"
+		connection-factory="jmsConnectionFactory"/>
+	<jms:inbound-channel-adapter
+		id="jmsSingleFileToBeIndexedOutAdapter"
+		destination-name="single.file.index.queue"
+		channel="isFileChannelOut"
+		connection-factory="jmsConnectionFactory"/>
+    <channel id="isFileChannelOut" />
+
+    <!-- If URI is a directory then splits into all URIs in the directory -->
+    <splitter id="uriSplitter" input-channel="isDirectoryChannel" output-channel="filesToBeIndexedOutChannel" method="splitUri" ref="splitter" />
+
+    <channel id="splitterOutChannel" />
 	
 	<beans:bean id="splitter" class="com.amin.luceneindexsi.index.integration.splitter.URISplitter">
            <beans:description>This bean is responsible for checking if uri is directory and if it is then splits then into files</beans:description>
@@ -62,7 +86,7 @@
 		<beans:description>Content extraction handler responsible for extracting content from a given URI</beans:description>
 	</beans:bean>
 		
-	<transformer id="uriToDocumentTransform" ref="uriToDocumentTransformer" method="transformUriToDocument" input-channel="splitterOutChannel" output-channel="uriToDocumentOutChannel" />
+	<transformer id="uriToDocumentTransform" ref="uriToDocumentTransformer" method="transformUriToDocument" input-channel="isFileChannel" output-channel="uriToDocumentOutChannel" />
 
 	
 	<!-- Document to WorkItem transformation definitions -->
@@ -127,7 +151,7 @@
 		<interval-trigger time-unit="SECONDS" interval="1" />
 	</poller>
 	
-	<thread-pool-task-executor id="pool" core-size="10"  max-size="25"  queue-capacity="100" />
+	<thread-pool-task-executor id="pool" core-size="100"  max-size="150"  queue-capacity="100" />
 	
 	<!-- Error Handling -->
  	<channel id="errorChannel" />

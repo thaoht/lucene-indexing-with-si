@@ -14,7 +14,9 @@ import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.parser.Parser;
 import org.apache.tika.sax.BodyContentHandler;
+import org.apache.log4j.Logger;
 import org.springframework.util.Assert;
+import org.springframework.util.StopWatch;
 import org.xml.sax.ContentHandler;
 
 
@@ -22,6 +24,7 @@ public class TikaContentHandler implements ContentExtractionHandler {
 
     private static final String BODY_FIELD = "body";
     private static final String FILE_NAME_FIELD = "filename";
+    private final Logger LOGGER = Logger.getLogger(getClass());
 
     /**
      * Converts a URI into a Lucene Document using Apache Tika
@@ -32,7 +35,9 @@ public class TikaContentHandler implements ContentExtractionHandler {
 	@Override
 	public Document getDocument(URI uri) throws Exception {
 		Assert.notNull(uri, "uri cannot be null");
-		File fileToBeIndexed = new File(uri);
+        StopWatch stopWatch = new StopWatch("tikaContentHandler");
+        stopWatch.start();
+        File fileToBeIndexed = new File(uri);
 		Metadata metadata = new Metadata();
 		metadata.set(Metadata.RESOURCE_NAME_KEY,  fileToBeIndexed.getCanonicalPath());
 		metadata.set(Metadata.LAST_MODIFIED, DateTools.dateToString(new Date(fileToBeIndexed.lastModified()), Resolution.DAY));
@@ -51,7 +56,9 @@ public class TikaContentHandler implements ContentExtractionHandler {
 			document.add(new Field(name, value,Field.Store.YES, Field.Index.NOT_ANALYZED, Field.TermVector.YES));
 		}
 	    document.add(new Field(FILE_NAME_FIELD, fileToBeIndexed.getCanonicalPath(),Field.Store.YES, Field.Index.NOT_ANALYZED));
-		return document;
+		stopWatch.stop();
+        LOGGER.debug("Total time taken to convert uri into document '" + stopWatch.getTotalTimeMillis() + "' ms");
+        return document;
 	}
 
 

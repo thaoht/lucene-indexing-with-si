@@ -18,9 +18,10 @@ public class CustomisedIndexWriter extends IndexWriter {
      * usage.
      * @throws Exception Exception thrown if directory cannot be locked.
      */
-	public void initialise() throws Exception {
+	public void startUp() throws Exception {
 		if (IndexWriter.isLocked(getDirectory())) {
 			IndexWriter.unlock(getDirectory());
 		}
 	}
+
 }

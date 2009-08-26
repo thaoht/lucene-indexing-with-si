@@ -10,6 +10,7 @@ import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.tika.metadata.Metadata;
 import org.springframework.util.Assert;
+import org.springframework.util.StopWatch;
 
 import com.amin.luceneindexsi.index.work.WorkItem;
 import com.amin.luceneindexsi.index.work.WorkItem.WorkItemEvent;
@@ -33,7 +34,8 @@ public class DocumentToWorkItemTransformer {
  	public WorkItem transformDocumentToWorkItem(Document document) {
     	Assert.notNull(document, "document cannot be null");
 		LOGGER.debug("inside " + getClass().getName() );
-
+        StopWatch stopWatch = new StopWatch("transformDocumentToWorkItem");
+        stopWatch.start();
 		IndexReader indexReader = null;
 		WorkItemEvent workItemEvent = null;
 		try {
@@ -62,6 +64,8 @@ public class DocumentToWorkItemTransformer {
 				throw new IllegalStateException(e);
 			}
 		}
+        stopWatch.stop();
+        LOGGER.debug("Total time taken to convert document to workItem '" + stopWatch.getTotalTimeMillis() + "' ms");
 		return new WorkItem(workItemEvent, document);
 	}
 }
