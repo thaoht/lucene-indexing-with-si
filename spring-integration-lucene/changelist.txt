@@ -1,5 +1,16 @@
-26th August 2006
-#Added DirectoryOrFileRouter Contribution: Dan Oxlade
-#Added DirectoryOrFileRouterTest Contribution: Dan Oxlade
-#Updated UriSpitter to take deal with just files
-#Added StopWatch measurements to DocuemntToWorkItemTransformer and TikaContentHandler
+26th August 2009
+#########################
+1. Added DirectoryOrFileRouter Contribution: Dan Oxlade
+2. Added DirectoryOrFileRouterTest Contribution: Dan Oxlade
+3. Updated UriSpitter to take deal with just files
+4. Added StopWatch measurements to DocuemntToWorkItemTransformer and TikaContentHandler
+
+5th September 2009
+#########################
+This commit includes contribution by Dan Oxlad
+#########################
+1. Upgraded to Spring Integration 1.0.3
+2. Added DocumentMetaDataInformation
+3. Removed WorkItem and added meta data added to the message payload
+4. IndexOperationHeaderEnricher and test
+5. Removed jms adapters for indexing work
