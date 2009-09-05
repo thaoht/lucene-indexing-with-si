@@ -11,6 +11,6 @@ public interface IndexingGateway {
      * require using this interface via Spring to access the SI flow.
      * @param uriOfFileToBeIndexed  Location of file or directory
      */
-	@Gateway(requestChannel = "filesToBeIndexedInChannel")
-	public void processFileForIndex(URI uriOfFileToBeIndexed);
+	@Gateway(requestChannel = "filesToBeIndexedChannel")
+	void processFileForIndex(URI uriOfFileToBeIndexed);
 }

@@ -3,9 +3,8 @@ package com.amin.luceneindexsi.index.manager;
 import org.apache.log4j.Logger;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.document.Document;
 import org.apache.tika.metadata.Metadata;
-
-import com.amin.luceneindexsi.index.work.WorkItem;
 
 public class IndexingManager {
 	
@@ -16,10 +15,10 @@ public class IndexingManager {
 		this.indexWriter = indexWriter;
 	}
 	
-	public void add(WorkItem workItem)  {
+	public void add(Document document)  {
 		try {
-			LOGGER.debug("adding workitem to index :" + Thread.currentThread().getName());
-			indexWriter.addDocument(workItem.getPayLoad());
+			LOGGER.debug("adding document to index :" + Thread.currentThread().getName());
+			indexWriter.addDocument(document);
 			indexWriter.commit();
 		} catch (Exception e) {
 			throw new IllegalStateException(e);
@@ -29,15 +28,15 @@ public class IndexingManager {
     /**
      * This updates the index. An update operation results in
      * a deletion of the original Document followed by adding the new Document
-     * @param workItem Payload for indexing
+     * @param document for indexing
      */
-	public void update(WorkItem workItem) {
+	public void update(Document document) {
 		try {
             
-			LOGGER.debug("updating workitem to index :" + Thread.currentThread().getName());
-			Term t = new Term(Metadata.RESOURCE_NAME_KEY, workItem.getPayLoad().get(Metadata.RESOURCE_NAME_KEY));
+			LOGGER.debug("updating document in index :" + Thread.currentThread().getName());
+			Term t = new Term(Metadata.RESOURCE_NAME_KEY, document.get(Metadata.RESOURCE_NAME_KEY));
 			indexWriter.deleteDocuments(t);	
-			indexWriter.addDocument(workItem.getPayLoad());
+			indexWriter.addDocument(document);
 			indexWriter.commit();
 		} catch (Exception e) {
 			throw new IllegalStateException(e);

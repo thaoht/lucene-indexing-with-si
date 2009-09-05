@@ -25,6 +25,6 @@
     	<description>Indexing process manager</description>
     	<constructor-arg ref="indexWriter" />
     </bean>
-
+   
 
 </beans>

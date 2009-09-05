@@ -45,8 +45,7 @@ public class IndexingManagerTest {
 	
 	@Test
 	public void testCanAddDocumentUsingIndexManager() throws Exception{
-		final WorkItem workItem  = new WorkItem(WorkItemEvent.ADD, document);
-		underTest.add(workItem);
+		underTest.add(document);
 		IndexReader indexReader = IndexReader.open(directory);
 		Term t = new Term(Metadata.RESOURCE_NAME_KEY, document.get(Metadata.RESOURCE_NAME_KEY));
 		int docFreq = indexReader.docFreq(t);
@@ -58,8 +57,7 @@ public class IndexingManagerTest {
 		indexWriter.addDocument(document);
 		indexWriter.commit();
 		
-		final WorkItem workItemUpdate  = new WorkItem(WorkItemEvent.UPDATE, document);
-		underTest.update(workItemUpdate);
+		underTest.update(document);
 		
 		IndexReader indexReader = IndexReader.open(directory);
 		assertEquals(1,indexReader.numDocs());

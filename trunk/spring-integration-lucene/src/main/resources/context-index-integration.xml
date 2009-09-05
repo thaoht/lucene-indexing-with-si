@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans:beans xmlns="http://www.springframework.org/schema/integration"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:beans="http://www.springframework.org/schema/beans"
-    xmlns:stream="http://www.springframework.org/schema/integration/stream"
-   	xmlns:mail="http://www.springframework.org/schema/integration/mail"
-    xmlns:jms="http://www.springframework.org/schema/integration/jms"
-    xmlns:context="http://www.springframework.org/schema/context"
-    xmlns:p="http://www.springframework.org/schema/p"
-    xsi:schemaLocation="http://www.springframework.org/schema/beans
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:beans="http://www.springframework.org/schema/beans"
+             xmlns:stream="http://www.springframework.org/schema/integration/stream"
+             xmlns:mail="http://www.springframework.org/schema/integration/mail"
+             xmlns:jms="http://www.springframework.org/schema/integration/jms"
+             xmlns:context="http://www.springframework.org/schema/context"
+             xmlns:p="http://www.springframework.org/schema/p" xmlns:util="http://www.springframework.org/schema/util"
+             xsi:schemaLocation="http://www.springframework.org/schema/beans
             http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
             http://www.springframework.org/schema/integration
             http://www.springframework.org/schema/integration/spring-integration-1.0.xsd
@@ -17,180 +17,160 @@
             http://www.springframework.org/schema/integration/mail/spring-integration-mail-1.0.xsd
 			http://www.springframework.org/schema/integration/jms
 			http://www.springframework.org/schema/integration/jms/spring-integration-jms-1.0.xsd
-            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd">
+            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd">
 
-	<annotation-config />
-	
-	<!-- Gateway into indexing process using Spring Integration -->
-	<gateway id="indexingGateway" service-interface="com.amin.luceneindexsi.index.integration.gateway.IndexingGateway" />
-   
-	<channel id="filesToBeIndexedInChannel" />
+    <annotation-config/>
 
-	<jms:outbound-channel-adapter 
-		id="jmsAddUriInAdapter" 
-		destination-name="file.index.queue" 
-		channel="filesToBeIndexedInChannel" 
-		connection-factory="jmsConnectionFactory"/>	
-	
-	<channel id="filesToBeIndexedOutChannel" />
+    <!-- *************************** -->
+    <!--    Gateway Definition       -->
+    <!-- *************************** -->
+    <gateway id="indexingGateway" service-interface="com.amin.luceneindexsi.index.integration.gateway.IndexingGateway"/>
 
-	<jms:inbound-channel-adapter 
-		id="jmsAddUriOutAdapter" 
-		destination-name="file.index.queue" 
-		channel="filesToBeIndexedOutChannel" 
-		connection-factory="jmsConnectionFactory"/>
+    <channel id="filesToBeIndexedChannel" />
 
-    <router input-channel="filesToBeIndexedOutChannel"
+    <router input-channel="filesToBeIndexedChannel"
             ref="directoryOrFileRouter"
             method="isDirectory"/>
+
+    <channel id="isDirectoryChannel"/>
+
+    <channel id="isFileChannelIn"/>
+
+    <jms:outbound-channel-adapter
+            id="jmsSingleFileToBeIndexedInAdapter"
+            destination-name="single.file.index.queue"
+            channel="isFileChannelIn"
+            connection-factory="jmsConnectionFactory"/>
+    <jms:inbound-channel-adapter
+            id="jmsSingleFileToBeIndexedOutAdapter"
+            destination-name="single.file.index.queue"
+            channel="isFileChannelOut"
+                connection-factory="jmsConnectionFactory"/>
+
+    <channel id="isFileChannelOut"/>
+
+
+    <!-- *************************** -->
+    <!--    Enrichment process       -->
+    <!-- *************************** -->
+    <splitter id="uriSplitter"
+              input-channel="isDirectoryChannel" output-channel="filesToBeIndexedChannel"
+              method="splitUri" ref="splitter"/>
+
+    <chain input-channel="isFileChannelOut" output-channel="enrichedDocumentChannel">
+        <transformer ref="uriToDocumentTransformer" method="transformUriToDocument" />
+        <transformer ref="indexOperationHeaderEnricher" />
+    </chain>
+
+    <channel id="enrichedDocumentChannel"/>
+
+    <jms:outbound-channel-adapter
+        id="jmsEnrichedDocumentIn"
+        destination-name="enriched.document.channel"
+        channel="enrichedDocumentChannel"
+        connection-factory="jmsConnectionFactory"/>
+
+    <jms:inbound-channel-adapter
+        id="jmsEnrichedDocumentOut"
+        destination-name="enriched.document.channel"
+        channel="enrichedDocumentOut"
+        connection-factory="jmsConnectionFactory"/>
+
+    <channel id="enrichedDocumentOut" />
+
+    <header-value-router input-channel="enrichedDocumentOut" header-name="index.operation"/>
 
     <beans:bean id="directoryOrFileRouter"
                 class="com.amin.luceneindexsi.index.integration.routing.DirectoryOrFileRouter"
                 p:directoryRoute="isDirectoryChannel"
-                p:fileRoute="isFileChannelIn" />
+                p:fileRoute="isFileChannelIn"/>
 
-    <channel id="isDirectoryChannel" />
-    <channel id="isFileChannelIn" />
-
-    
-	<jms:outbound-channel-adapter
-		id="jmsSingleFileToBeIndexedInAdapter"
-		destination-name="single.file.index.queue"
-		channel="isFileChannelIn"
-		connection-factory="jmsConnectionFactory"/>
-	<jms:inbound-channel-adapter
-		id="jmsSingleFileToBeIndexedOutAdapter"
-		destination-name="single.file.index.queue"
-		channel="isFileChannelOut"
-		connection-factory="jmsConnectionFactory"/>
-    <channel id="isFileChannelOut" />
-
-    <!-- If URI is a directory then splits into all URIs in the directory -->
-    <splitter id="uriSplitter"
-              input-channel="isDirectoryChannel" output-channel="filesToBeIndexedOutChannel"
-              method="splitUri" ref="splitter" />
-
-    <channel id="splitterOutChannel" />
-	
-	<beans:bean id="splitter" class="com.amin.luceneindexsi.index.integration.splitter.URISplitter">
-           <beans:description>This bean is responsible for checking if uri is directory and if it is then splits then into files</beans:description>
+    <beans:bean id="splitter" class="com.amin.luceneindexsi.index.integration.splitter.URISplitter">
+        <beans:description>This bean is responsible for checking if uri is directory and if it is then splits then into files</beans:description>
     </beans:bean>
-	
-	<!-- ******************* START TRANSFORMER DEFINTIIONS ************************************* -->
-	
-	<!-- URI to document transformation definitions -->
-	<beans:bean id="uriToDocumentTransformer" class="com.amin.luceneindexsi.index.integration.transformer.UriToDocumentTransformer">
-		<beans:description>Transformer class that converts a URI of a file into a Lucene Document using Apache Tika</beans:description>
-		<beans:constructor-arg ref="tikaContentHandler" />
-	</beans:bean> 
 
-	<beans:bean id="tikaContentHandler" class="com.amin.luceneindexsi.index.content.extraction.TikaContentHandler">
-		<beans:description>Content extraction handler responsible for extracting content from a given URI</beans:description>
-	</beans:bean>
-		
-	<transformer id="uriToDocumentTransform"
-                 ref="uriToDocumentTransformer" method="transformUriToDocument"
-                 input-channel="isFileChannelOut" output-channel="uriToDocumentOutChannel" />
 
-	
-	<!-- Document to WorkItem transformation definitions -->
-	<beans:bean id="documentToWorkItemTransformer" class="com.amin.luceneindexsi.index.integration.transformer.DocumentToWorkItemTransformer">
-		<beans:description>Transformer responsible for converting a lucene document into a WorkItem</beans:description>
-		<beans:constructor-arg ref="directory" />
-	</beans:bean>
-	
-	<transformer id="documentToWorkItemTransform"
-                 ref="documentToWorkItemTransformer" method="transformDocumentToWorkItem"
-                 input-channel="uriToDocumentOutChannel" output-channel="workItemOutChannel" />
+    <!-- *************************** -->
+    <!--   Transformer definition    -->
+    <!-- *************************** -->
+    <beans:bean id="uriToDocumentTransformer" class="com.amin.luceneindexsi.index.integration.transformer.UriToDocumentTransformer">
+        <beans:description>Transformer class that converts a URI of a file into a Lucene Document using Apache Tika</beans:description>
+        <beans:constructor-arg ref="tikaContentHandler"/>
+    </beans:bean>
 
-	<channel id="uriToDocumentOutChannel" />
-	<channel id="workItemOutChannel" />
+    <beans:bean id="tikaContentHandler" class="com.amin.luceneindexsi.index.content.extraction.TikaContentHandler">
+        <beans:description>Content extraction handler responsible for extracting content from a given URI
+        </beans:description>
+    </beans:bean>
 
-    <!-- ********************** END OF TRANSFOMRER DEFINTIIONS ****************************-->
+    <beans:bean id="indexOperationHeaderEnricher" class="com.amin.luceneindexsi.index.integration.transformer.IndexOperationHeaderEnricher">
+        <beans:description>Enriches payload with add or update index opertion</beans:description>
+        <beans:constructor-arg index="0" ref="documentInformation" />
+    </beans:bean>
 
-	<!-- Work Item routing definitions -->	
-	<router id="workItemRouter" input-channel="workItemOutChannel" ref="router" method="resolveWorkItemEventChannel" />
-	
-	<beans:bean id="router" class="com.amin.luceneindexsi.index.integration.routing.WorkItemRouter">
-		<beans:description>Router which determines which channel a workitem will go down</beans:description>
-	</beans:bean>
-	
-	<!-- Service activators -->
-	<channel id="add" />
-	<channel id="update" />
-	
-	<jms:outbound-channel-adapter 
-		id="jmsAddIndexAdapter" 
-		destination-name="add.index.queue" 
-		channel="add" 
-		connection-factory="jmsConnectionFactory"/>
-	
-	<jms:outbound-channel-adapter 
-		id="jmsUpdateIndexAdapter" 
-		destination-name="update.index.queue" 
-		channel="update" 
-		connection-factory="jmsConnectionFactory"/>
-	
-	
-	<jms:inbound-channel-adapter 
-		id="jmsAddIndexOutAdapter" 
-		destination-name="add.index.queue" 
-		channel="addIndexOut" 
-		connection-factory="jmsConnectionFactory"/>
-		
-	<jms:inbound-channel-adapter 
-		id="jmsUpdateIndexOutAdapter" 
-		destination-name="update.index.queue" 
-		channel="updateIndexOut" 
-		connection-factory="jmsConnectionFactory"/>
-		
-	
-	<channel id="addIndexOut"/>
-	<channel id="updateIndexOut"/>
-	
-	<service-activator input-channel="addIndexOut" ref="indexingManager" method="add" />
+    <beans:bean id="documentInformation" class="com.amin.luceneindexsi.index.document.DocumentMetaDataInformationImpl">
+        <beans:description>Returns an index operation which can be add or update or delete based on Metadata.RESOURCE_NAME_KEY</beans:description>
+        <beans:constructor-arg index="0" ref="directory" />
+    </beans:bean>
 
-	<service-activator input-channel="updateIndexOut" ref="indexingManager" method="update" />
-	
-	<!-- Polling configuration -->	
-	<poller task-executor="pool" default="true">
-		<interval-trigger time-unit="SECONDS" interval="1" />
-	</poller>
-	
-	<thread-pool-task-executor id="pool" core-size="100"  max-size="150"  queue-capacity="100" />
-	
-	<!-- Error Handling -->
- 	<channel id="errorChannel" />
- 	
- 	<channel id="errorOutChannel" />
-	
-	<beans:bean id="errorTransformer" class="com.amin.luceneindexsi.index.integration.transformer.ErrorTransformer">
+
+    <!-- *************************** -->
+    <!--    Service activators       -->
+    <!-- *************************** -->
+    <channel id="add"/>
+    <channel id="update"/>
+
+
+	<service-activator input-channel="add" ref="indexingManager" method="add" />
+
+	<service-activator input-channel="update" ref="indexingManager" method="update" />
+
+
+    <!-- *************************** -->
+    <!--    Polling configuration    -->
+    <!-- *************************** -->
+    <poller task-executor="pool" default="true">
+        <interval-trigger time-unit="SECONDS" interval="1"/>
+    </poller>
+
+    <thread-pool-task-executor id="pool" core-size="100" max-size="150" queue-capacity="600"/>
+
+
+
+    <!-- *************************** -->
+    <!--    Error Handling           -->
+    <!-- *************************** -->
+    <channel id="errorChannel"/>
+
+    <channel id="errorOutChannel"/>
+
+    <beans:bean id="errorTransformer" class="com.amin.luceneindexsi.index.integration.transformer.ErrorTransformer">
         <beans:description>Transformer responsible for converting an error payload from SI into a String</beans:description>
     </beans:bean>
-        
-	
-	<chain input-channel="errorChannel" output-channel="errorOutChannel">
-		<transformer ref="errorTransformer" method="transformError" />
+
+
+    <chain input-channel="errorChannel" output-channel="errorOutChannel">
+        <transformer ref="errorTransformer" method="transformError"/>
         <mail:header-enricher from="${mailFrom}" to="${mailTo}" subject="${mail.subject}" overwrite="false"/>
-     </chain>
+    </chain>
 
 
-	<!-- Mail sending error -->
-	<mail:outbound-channel-adapter channel="errorOutChannel" mail-sender="mailSender" />
+    <!-- *************************** -->
+    <!--   Mail sending config       -->
+    <!-- *************************** -->
+    <mail:outbound-channel-adapter channel="errorOutChannel" mail-sender="mailSender"/>
 
 
-	
-	<beans:bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
-  		<beans:property name="host" value="${mail.smtp.host}" />
-  		<beans:property name="port" value="${mail.smtp.port}" />
-  		<beans:property name="username" value="${mail.username}" />
-  		<beans:property name="password" value="${mail.password}" />
-  		<beans:property name="javaMailProperties" ref="javaMailProperties" />
-	</beans:bean>
+    <beans:bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+        <beans:property name="host" value="${mail.smtp.host}"/>
+        <beans:property name="port" value="${mail.smtp.port}"/>
+        <beans:property name="username" value="${mail.username}"/>
+        <beans:property name="password" value="${mail.password}"/>
+        <beans:property name="javaMailProperties" ref="javaMailProperties"/>
+    </beans:bean>
 
-	<beans:bean id="javaMailProperties" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
-  		<beans:property name="location" value="classpath:javamail.properties"/>
-	</beans:bean>
-    <!-- End of Error Handling definitions -->
-	
+    <beans:bean id="javaMailProperties" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+        <beans:property name="location" value="classpath:javamail.properties"/>
+    </beans:bean>
+ 
 </beans:beans>
