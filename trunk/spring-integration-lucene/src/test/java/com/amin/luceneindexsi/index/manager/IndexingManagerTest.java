@@ -26,21 +26,21 @@ public class IndexingManagerTest {
 	private Document document;
 	
 	@Before
-	public void setUp() throws Exception {
+	public void init() throws Exception {
 		directory = new RAMDirectory();
 		indexWriter = new IndexWriter(directory, new StandardAnalyzer(Version.LUCENE_30), MaxFieldLength.UNLIMITED);
 		underTest = new IndexingManager(indexWriter);
 	}
 	
 	@Before
-	public void setUpData() {
+	public void initData() {
 		document = new Document();
 		Field f= new Field(Metadata.RESOURCE_NAME_KEY, "/test/pdfFile.pdf", Store.NO, Index.NOT_ANALYZED);
 		document.add(f);
 	}
 	
 	@Test
-	public void testCanAddDocumentUsingIndexManager() throws Exception{
+	public void canAddDocumentUsingIndexManager() throws Exception{
 		underTest.add(document);
 		IndexReader indexReader = IndexReader.open(directory);
 		Term t = new Term(Metadata.RESOURCE_NAME_KEY, document.get(Metadata.RESOURCE_NAME_KEY));
@@ -49,7 +49,7 @@ public class IndexingManagerTest {
 	}
 	
 	@Test
-	public void testCanUpdateDocumentUsingIndexManager() throws Exception{
+	public void canUpdateDocumentUsingIndexManager() throws Exception{
 		indexWriter.addDocument(document);
 		indexWriter.commit();
 		
@@ -60,7 +60,7 @@ public class IndexingManagerTest {
 	}
 	
 	@After
-	public void tearDown() throws Exception{
+	public void destroy() throws Exception{
 		if (IndexWriter.isLocked(directory)) {
 			IndexWriter.unlock(directory);
 		}

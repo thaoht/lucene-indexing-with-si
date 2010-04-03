@@ -25,7 +25,7 @@ public class LuceneIndexingSpringIntegrationTest {
 	@Autowired private Directory directory;
 	
 	@Test
-	public void testCanPerformIndexing() throws Exception {
+	public void canPerformIndexing() throws Exception {
 		URI uri = new URI("file://"+CURRENT_WORKING_DIR+"/test-data/springsecurity.pdf");
 		indexingGateway.processFileForIndex(uri);
 		TimeUnit.SECONDS.sleep(10);

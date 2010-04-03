@@ -1,11 +1,10 @@
 package com.amin.luceneindexsi.index.integration.splitter;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 import java.net.URI;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -16,12 +15,12 @@ public class URISplitterTest {
 	private static final String CURRENT_WORKING_DIR = System.getProperty("user.dir");
 	
 	@Before
-	public void setUp() {
+	public void init() {
 		underTest = new URISplitter();
 	}
 	
 	@Test
-	public void testCanRetriveListOfURIsForSingleFile() throws Exception {
+	public void canRetriveListOfURIsForSingleFile() throws Exception {
 		URI uri = new URI("file://"+CURRENT_WORKING_DIR+"/test-data/springsecurity.pdf");
 		List<URI> list = underTest.splitUri(uri);
 		assertNotNull(list);
@@ -29,7 +28,7 @@ public class URISplitterTest {
 	}
 	
 	@Test(expected=IllegalArgumentException.class)
-	public void testExceptionThrownIfUriDoesNotExist() throws Exception {
+	public void exceptionThrownIfUriDoesNotExist() throws Exception {
 		URI uri = new URI("file://"+CURRENT_WORKING_DIR+"/test-data/xyz.xtf");
 		underTest.splitUri(uri);
 	}
