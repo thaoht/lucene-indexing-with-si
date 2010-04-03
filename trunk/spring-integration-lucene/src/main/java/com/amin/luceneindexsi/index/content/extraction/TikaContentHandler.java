@@ -5,6 +5,9 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.Date;
+import javax.print.attribute.standard.Compression;
+
+import org.apache.lucene.document.CompressionTools;
 import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -49,7 +52,7 @@ public class TikaContentHandler implements ContentExtractionHandler {
 		String content = contentHandler.toString();
 
 		Document document = new Document();
-		document.add(new Field(BODY_FIELD, content, Store.COMPRESS, Field.Index.ANALYZED));
+		document.add(new Field(BODY_FIELD, CompressionTools.compressString(content), Field.Store.YES));
 		
 		for(String name: metadata.names()) {
 			String value = metadata.get(name);
