@@ -1,11 +1,11 @@
 package com.amin.luceneindexsi.index.integration.routing;
 
-import org.junit.Before;
-import org.junit.Test;
+import java.net.URI;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import java.net.URI;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Created by IntelliJ IDEA.
@@ -19,7 +19,7 @@ public class DirectoryOrFileRouterTest {
     private static final String CURRENT_WORKING_DIR = System.getProperty("user.dir");
 
     @Before
-    public void setUp() {
+    public void init() {
         underTest = new DirectoryOrFileRouter();
         underTest.setDirectoryRoute("isDirectoryChannel");
         underTest.setFileRoute("isFileChannel");
@@ -27,7 +27,7 @@ public class DirectoryOrFileRouterTest {
     }
 
     @Test
-    public void testDirectoryChannelReturnedIfUriIsDirectory() throws Exception {
+    public void directoryChannelReturnedIfUriIsDirectory() throws Exception {
         URI uri = new URI("file://"+CURRENT_WORKING_DIR+"/test-data/");
         String channel = underTest.isDirectory(uri);
         assertNotNull(channel);
@@ -36,7 +36,7 @@ public class DirectoryOrFileRouterTest {
     }
 
     @Test
-    public void testFileChannelIsReturnedIfUriIsFile() throws Exception {
+    public void fileChannelIsReturnedIfUriIsFile() throws Exception {
         URI uri = new URI("file://"+CURRENT_WORKING_DIR+"/test-data/springsecurity.pdf");
         String channel = underTest.isDirectory(uri);
         assertNotNull(channel);
