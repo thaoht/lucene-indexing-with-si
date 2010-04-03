@@ -1,5 +1,7 @@
 package com.amin.luceneindexsi.index.directory;
 
+import java.io.File;
+
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
@@ -14,7 +16,7 @@ public class CustomisedDirectory  {
      * @throws Exception Exception is thrown if any errors occured while trying to obtain a directory
      */
 	public static Directory getDirectory(String path) throws Exception {
-		FSDirectory fsDirectory = FSDirectory.getDirectory(path);
+		FSDirectory fsDirectory = FSDirectory.open(new File(path));
 		if (IndexWriter.isLocked(fsDirectory)) {
 			IndexWriter.unlock(fsDirectory);
 		}

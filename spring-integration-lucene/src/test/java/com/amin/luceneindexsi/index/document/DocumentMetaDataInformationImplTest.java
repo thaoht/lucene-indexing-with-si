@@ -1,21 +1,22 @@
 package com.amin.luceneindexsi.index.document;
 
-import org.junit.Test;
-import org.junit.Before;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.RAMDirectory;
-import org.apache.lucene.store.LockObtainFailedException;
+import java.io.IOException;
+
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.CorruptIndexException;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.LockObtainFailedException;
+import org.apache.lucene.store.RAMDirectory;
+import org.apache.lucene.util.Version;
 import org.apache.tika.metadata.Metadata;
 import org.jmock.Mockery;
-
-import java.io.IOException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import org.junit.Before;
+import org.junit.Test;
 
 public class DocumentMetaDataInformationImplTest {
 
@@ -30,7 +31,7 @@ public class DocumentMetaDataInformationImplTest {
     @Before
     public void createSUT(){
 		directory = new RAMDirectory();
-		analyzer = new StandardAnalyzer();
+		analyzer = new StandardAnalyzer(Version.LUCENE_30);
 		try {
 			indexWriter = new IndexWriter(directory,analyzer, IndexWriter.MaxFieldLength.UNLIMITED);
 		} catch (CorruptIndexException e) {

@@ -7,17 +7,18 @@
              xmlns:jms="http://www.springframework.org/schema/integration/jms"
              xmlns:context="http://www.springframework.org/schema/context"
              xmlns:p="http://www.springframework.org/schema/p" xmlns:util="http://www.springframework.org/schema/util"
+             xmlns:task="http://www.springframework.org/schema/task"
              xsi:schemaLocation="http://www.springframework.org/schema/beans
-            http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+            http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
             http://www.springframework.org/schema/integration
-            http://www.springframework.org/schema/integration/spring-integration-1.0.xsd
+            http://www.springframework.org/schema/integration/spring-integration-2.0.xsd
             http://www.springframework.org/schema/integration/stream
-            http://www.springframework.org/schema/integration/stream/spring-integration-stream-1.0.xsd
+            http://www.springframework.org/schema/integration/stream/spring-integration-stream-2.0.xsd
             http://www.springframework.org/schema/integration/mail
-            http://www.springframework.org/schema/integration/mail/spring-integration-mail-1.0.xsd
+            http://www.springframework.org/schema/integration/mail/spring-integration-mail-2.0.xsd
 			http://www.springframework.org/schema/integration/jms
-			http://www.springframework.org/schema/integration/jms/spring-integration-jms-1.0.xsd
-            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd">
+			http://www.springframework.org/schema/integration/jms/spring-integration-jms-2.0.xsd
+            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.0.xsd">
 
     <annotation-config/>
 
@@ -26,7 +27,7 @@
     <!-- *************************** -->
     <gateway id="indexingGateway" service-interface="com.amin.luceneindexsi.index.integration.gateway.IndexingGateway"/>
 
-    <channel id="filesToBeIndexedChannel" />
+    <channel id="filesToBeIndexedChannel"/>
 
     <router input-channel="filesToBeIndexedChannel"
             ref="directoryOrFileRouter"
@@ -45,7 +46,7 @@
             id="jmsSingleFileToBeIndexedOutAdapter"
             destination-name="single.file.index.queue"
             channel="isFileChannelOut"
-                connection-factory="jmsConnectionFactory"/>
+            connection-factory="jmsConnectionFactory"/>
 
     <channel id="isFileChannelOut"/>
 
@@ -58,25 +59,25 @@
               method="splitUri" ref="splitter"/>
 
     <chain input-channel="isFileChannelOut" output-channel="enrichedDocumentChannel">
-        <transformer ref="uriToDocumentTransformer" method="transformUriToDocument" />
-        <transformer ref="indexOperationHeaderEnricher" />
+        <transformer ref="uriToDocumentTransformer" method="transformUriToDocument"/>
+        <transformer ref="indexOperationHeaderEnricher"/>
     </chain>
 
     <channel id="enrichedDocumentChannel"/>
 
     <jms:outbound-channel-adapter
-        id="jmsEnrichedDocumentIn"
-        destination-name="enriched.document.channel"
-        channel="enrichedDocumentChannel"
-        connection-factory="jmsConnectionFactory"/>
+            id="jmsEnrichedDocumentIn"
+            destination-name="enriched.document.channel"
+            channel="enrichedDocumentChannel"
+            connection-factory="jmsConnectionFactory"/>
 
     <jms:inbound-channel-adapter
-        id="jmsEnrichedDocumentOut"
-        destination-name="enriched.document.channel"
-        channel="enrichedDocumentOut"
-        connection-factory="jmsConnectionFactory"/>
+            id="jmsEnrichedDocumentOut"
+            destination-name="enriched.document.channel"
+            channel="enrichedDocumentOut"
+            connection-factory="jmsConnectionFactory"/>
 
-    <channel id="enrichedDocumentOut" />
+    <channel id="enrichedDocumentOut"/>
 
     <header-value-router input-channel="enrichedDocumentOut" header-name="index.operation"/>
 
@@ -86,15 +87,19 @@
                 p:fileRoute="isFileChannelIn"/>
 
     <beans:bean id="splitter" class="com.amin.luceneindexsi.index.integration.splitter.URISplitter">
-        <beans:description>This bean is responsible for checking if uri is directory and if it is then splits then into files</beans:description>
+        <beans:description>This bean is responsible for checking if uri is directory and if it is then splits then into
+            files
+        </beans:description>
     </beans:bean>
 
 
     <!-- *************************** -->
     <!--   Transformer definition    -->
     <!-- *************************** -->
-    <beans:bean id="uriToDocumentTransformer" class="com.amin.luceneindexsi.index.integration.transformer.UriToDocumentTransformer">
-        <beans:description>Transformer class that converts a URI of a file into a Lucene Document using Apache Tika</beans:description>
+    <beans:bean id="uriToDocumentTransformer"
+                class="com.amin.luceneindexsi.index.integration.transformer.UriToDocumentTransformer">
+        <beans:description>Transformer class that converts a URI of a file into a Lucene Document using Apache Tika
+        </beans:description>
         <beans:constructor-arg ref="tikaContentHandler"/>
     </beans:bean>
 
@@ -103,14 +108,17 @@
         </beans:description>
     </beans:bean>
 
-    <beans:bean id="indexOperationHeaderEnricher" class="com.amin.luceneindexsi.index.integration.transformer.IndexOperationHeaderEnricher">
+    <beans:bean id="indexOperationHeaderEnricher"
+                class="com.amin.luceneindexsi.index.integration.transformer.IndexOperationHeaderEnricher">
         <beans:description>Enriches payload with add or update index opertion</beans:description>
-        <beans:constructor-arg index="0" ref="documentInformation" />
+        <beans:constructor-arg index="0" ref="documentInformation"/>
     </beans:bean>
 
     <beans:bean id="documentInformation" class="com.amin.luceneindexsi.index.document.DocumentMetaDataInformationImpl">
-        <beans:description>Returns an index operation which can be add or update or delete based on Metadata.RESOURCE_NAME_KEY</beans:description>
-        <beans:constructor-arg index="0" ref="directory" />
+        <beans:description>Returns an index operation which can be add or update or delete based on
+            Metadata.RESOURCE_NAME_KEY
+        </beans:description>
+        <beans:constructor-arg index="0" ref="directory"/>
     </beans:bean>
 
 
@@ -121,9 +129,9 @@
     <channel id="update"/>
 
 
-	<service-activator input-channel="add" ref="indexingManager" method="add" />
+    <service-activator input-channel="add" ref="indexingManager" method="add"/>
 
-	<service-activator input-channel="update" ref="indexingManager" method="update" />
+    <service-activator input-channel="update" ref="indexingManager" method="update"/>
 
 
     <!-- *************************** -->
@@ -133,8 +141,7 @@
         <interval-trigger time-unit="SECONDS" interval="1"/>
     </poller>
 
-    <thread-pool-task-executor id="pool" core-size="100" max-size="150" queue-capacity="600"/>
-
+    <task:executor id="pool" pool-size="100" queue-capacity="600"/>
 
 
     <!-- *************************** -->
@@ -145,13 +152,18 @@
     <channel id="errorOutChannel"/>
 
     <beans:bean id="errorTransformer" class="com.amin.luceneindexsi.index.integration.transformer.ErrorTransformer">
-        <beans:description>Transformer responsible for converting an error payload from SI into a String</beans:description>
+        <beans:description>Transformer responsible for converting an error payload from SI into a String
+        </beans:description>
     </beans:bean>
 
 
     <chain input-channel="errorChannel" output-channel="errorOutChannel">
         <transformer ref="errorTransformer" method="transformError"/>
-        <mail:header-enricher from="${mailFrom}" to="${mailTo}" subject="${mail.subject}" overwrite="false"/>
+        <mail:header-enricher>
+            <mail:from value="${mailFrom}"/>
+            <mail:to value="${mailTo}"/>
+            <mail:subject value="${mail.subject}"/>
+        </mail:header-enricher>
     </chain>
 
 
@@ -172,5 +184,5 @@
     <beans:bean id="javaMailProperties" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
         <beans:property name="location" value="classpath:javamail.properties"/>
     </beans:bean>
- 
+
 </beans:beans>

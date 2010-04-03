@@ -9,8 +9,13 @@
    http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd">
 	
 	
-	<bean id="analyzer" class="org.apache.lucene.analysis.standard.StandardAnalyzer" />
-	
+	<bean id="analyzer" class="org.apache.lucene.analysis.standard.StandardAnalyzer">
+        <constructor-arg type="org.apache.lucene.util.Version">
+            <value>LUCENE_30</value>
+        </constructor-arg>
+    </bean>
+
+
 	
 	<bean id="indexWriter" class="com.amin.luceneindexsi.index.CustomisedIndexWriter" init-method="startUp">
     	<description>Customised index writer to handle the event of a configured directory is locked</description>
