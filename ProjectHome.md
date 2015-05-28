@@ -1,0 +1,1 @@
+This is a reference project which demonstrates the use of Spring Integration for performing Lucene indexing operations.  It uses JMS for sending WorkItems for indexing. The WorkItem encapsulates the Lucene document and the event type. The event type is either ADD or UPDATE at this stage.
